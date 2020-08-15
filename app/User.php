@@ -74,7 +74,7 @@ class User extends Authenticatable
         }
     }
     
-       public function unfollow($userId)
+    public function unfollow($userId)
     {
         // すでにフォローしているかの確認
         $exist = $this->is_following($userId);
@@ -95,5 +95,15 @@ class User extends Authenticatable
     {
         // フォロー中ユーザの中に $userIdのものが存在するか
         return $this->followings()->where('follow_id', $userId)->exists();
+    }
+    
+    public function feed_microposts()
+    {
+        // このユーザがフォロー中のユーザのidを取得して配列にする
+        $userIds = $this->followings()->pluck('users.id')->toArray();
+        // このユーザのidもその配列に追加
+        $userIds[] = $this->id;
+        // それらのユーザが所有する投稿に絞り込む
+        return Micropost::whereIn('user_id', $userIds);
     }
 }
